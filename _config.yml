@@ -1,1 +1,20 @@
+title: Sybil's campfire
+description: >
+  Have a rest stranger.
+  Let me tell you the stories of my development life.
+permalink: /:title
+show_excerpts: true
+
+github_username: Sybil
+
+minima:
+  social_links:
+    github: Sybil
+
 theme: minima
+
+defaults:
+  - scope:
+      path: _posts
+    values:
+      layout: post
