@@ -1,42 +1,40 @@
 ---
 layout: post
-title: "Antipattern : Holistic design, Babel tower and scaling"
+title: "Antipattern : Holistic design"
 categories: ruby
 ---
 
-In all my jobs scaling was always the grand goal of work. Whatever the size of the project, scaling was often an excuse to try fun technologies and refactor hated code.
+Whatever the size of the company I worked for, scaling was always in everyone mind. Yet it was always difficult to scale, even tho some applications were designed to be scalable from the get go. I believe this issue was a reccuring one, because the work organization always shared an antipattern : **holistic design**.
 
-It's a very easy argument to give to non-tech people.
-Who doesn't want their project/enterprise to grow ?
-Who does not want to feel like they have grownup problems, as if they were Facebook/Google/etc ?
+What I call holistic design is this sweet mix of feature creep and desire for perfection. It is a design that ends up trying to meet all end user needs instead of focusing  around a very specific (or core) problem.
 
-The end solution for scaling is more or less always the same : more CPU, more RAM, more processes, etc.
-In the web, the bottleneck was often the database, probably because these systems are stronger than any other layer and therefore become the foundation of many complex behaviors (what would we be without ACID and the sweet rollbacks ?).
+Often perfection is misinterpreted as omnipotence. Doing one simple thing perfectly (here perfectly could be read as *mathematically proven*) is replaced with doing many things. Every missing feature is seen as a failure in the system. As soon as a user has a desire that live outside of the boundaries of the application, it is a bug. Fixing it brings the antipattern. Good will is the Troyan horse of antiscaling
 
-What's strange is that in all places I worked, scaling was a consideration from the get go. So how could applications designed to be scalable end up not being it (when it's not incompetence or lack of manpower) ?
+I deeply believe the human/social part plays a massive role (probably the biggest) in all architecture decisions. For a simple reason : most system became complex enough to rely on many people, with nobody knowning everything about the codebase/product. Since all actors have partial information, a lot of decisions move from a single brain to a distributed discussion [1].
 
-**Because of the holistic design**
+So we have many people and they all deeply desire to solve all problems, to make the user happy, to have an infailible system. In few iterations it ends up as a holistic design : all features are tied together. Whatever situation the user is in, they are able to access everything. Any improvement is ported everywhere, just in case someone could need it, strong product decisions are mellowed so everyone could be happy, etc. As crrafters, developer deeply love their creation. When user insatisfaction is reported,  it is difficult to stay rational. It requires a strong detachment to realize that maybe this complaint represents 0.00001% of the population and we don't care. Sometime it is impossible to know how many people are impacted. So, in doubt, we add a floor to the Babel tower[2].
 
-What I call holistic design is this sweet mix of feature creep and the desire for perfection. Often perfection is misinterpreted as omnipotence. Doing one simple thing perfectly (here perfectly could be read as *mathematically proven*) is replaced with doing many things. Every missing feature is seen as a failure in the system. As soon as a user has a desire that live outside of the boundaries of the application, it is a bug. Fixing it brings the antipattern. Good will is the Troyan horse of antiscaling.
-
-I deeply believe the human/social part plays a massive role (probably the biggest) in all architecture decisions. Like in every science, the myth of the lone problem solver/architecture god is still very pregnant but do not match the fact that the complexity of modern day problems require many people. No single brain can hold all the information nowadays.
-
-So we have many people and they all deeply desire to solve all problems, to cover all user needs and to have a infailible system. In few iterations it ends up as a holistic design : all features are tied together. Whatever the flow the user do they can still reach anything. Any improvement is ported everywhere, just in case someone could need it, strong product decisions are mellowed so everyone could be happy, etc. I also believe developement seen as a craft leaves a huge love for the baby/product : when being reported an unsatisfied user it requires a strong detachment to realize that maybe they represent 0.00001% of the population and we don't care. Sometime it is impossible to know how many people are impacted. So, in doubt, we add a floor to the Babel tower[1].
-
-It impacts heavily the codebase. An holistic design is a complete graph : every point is relied to all others. Whatever the splendid art that was build, services or components, libraries or packages, they all end up being tied together. Maybe they live in different places, maybe their messages respect a very well drawn API, but all know about everyone else, all impact each other.
-
-Most of the time, it can be seen on the database level : every table has relations to many others. So from any place in the application, we can link to another feature or domain logic. Or from any point in time, we can rollback or get past information. From an holistic product, we went down to an holistic architecture.
+It impacts heavily the codebase. An holistic design is a complete graph : every point is relied to all others. Whatever the splendid art that was build, services or components, libraries or packages, they all end up being tied together. Maybe they live in different places, maybe their messages respect a very well drawn API, but all know about everyone else, all impact each other. Since most developers know this kind of heavy dependency is bad, it can be hidde. Instead of having direct couplage, the correlation is made indirect. There are different ways to do it. Per example :
+- Features relying on sync behavior in many systems. The processing order is critical and is hidden as a code byproduct. These systems can only work because another one has made some work beforehand (even if in term of pure implementation none of those systems references each other). So changing one breaks the whole chain.
+- Enforcing very specific/custom user flows. Instead of having an holistic implementation, it becomes holistic features : whatever the state you're in you go through the same action, but each time it goes through a different funnel, so the holistic pattern stay hidden : officially the design are separate. This is a very brittle : any user flow update can break this equilibrium.
+- Every reference to other dependencies is removed from the code, but most of the data format is in fact directly mapped to the consumer requirement.
+- On the data persistence level, with either having many relations or huge data inconsistency (depending of the choices made).
 
 This cannot scale :
 - For the product  : imagine the 80s software, with 500 buttons proposing all gradients of a user desire.
 - For a codebase : huge database bottlenecks, but even application ones. Every change can have unforseen and huge waves of impact until it reaches the faraway lands of this forgotten part.
+- For the ability to even understand the application : since there are many side effects, deep couplage, unwritten dependencies, all is brittle.
 
-In my opinion it can be even harder to change than solving technical challenges[2]. First, it can even be difficult to even see that we are in the holistic antipattern. Afterall it's the after effect of an uncounsious desire, so it is never acted, or discussed. Second challenging it could easily lead to breaking changes or challenging existing product visions.
+In my opinion it can be even harder to change than solving technical challenges. First, it is difficult to simply realize the presence of the holistic antipattern. Afterall it's the after effect of an uncounsious desire (for perfection), so it is never acted, or discussed. Secondly, it often leads to breaking changes or challenging existing product visions since an holistic pattern offers a more "complete" user experience.
 
-Once detected, moving out of the antipattern can be really painful : solving it is more than a technical show (like let's rewrite it in xxx language a-la-mode, move to NSA-level datastore, etc) but potentially impacts existing features (or even require to remove them). This demands to refocus to the core, to rediscuss the existing. It can be painful : developer opinion is sometime unwelcomed on this subject (they look like they talk about product, not their technical craft) and this involves debates/hot discussions. Last part can be problematic, most people would rather refactor a whole application than do a one hour long heated meeting.
+Once detected, moving out of the antipattern can be really painful : solving it is not a technical show (like let's rewrite it in xxx language a-la-mode, move to NSA-level datastore, etc) but potentially impacts existing features (or even require to remove them). This demands to refocus to the core, to rediscuss the existing. It can be painful : developer opinion is sometime unwelcomed on this subject (they look like they talk about product, not their technical craft) and this involves debates/hot discussions. This one is problematic, most people would rather refactor a whole application than do a one hour long heated meeting.
 
-It also require to be always on guard, since this state can simply be reached by *fixing problems*. So your are in the antipattern, but in your everyday life you have the impression to move forward, to add this sweet new button, etc. And one day you look back and you realize that now it takes 6 months to add a feature. Or that users get lost in your product. Or simply that you watch [this video](https://www.youtube.com/watch?v=y8OnoxKotPQ) 10 times a day.
+It also requires to be always on guard, since this state can simply be reached by *fixing problems*. So you're building the antipattern, but in your everyday life you have the impression to move forward, to add this sweet new button, etc. And one day you look back and you realize that now it takes 6 months to add a feature. Or that users get lost in your product. Or simply that you watch [this video](https://www.youtube.com/watch?v=y8OnoxKotPQ) 10 times a day. Or the new developers do not even understand the current flows and their potential impacts.
 
-[1] I could probably write a whole article about this. Software world could probably learn a lot of existing craft (like the old medieval church bulding) and the old tales that they hold.
+Some could say that this antipattern is just the pattern of a product gaining in complexity with time. I disagree : it is more difficult to do simple things than complex ones. A well done application shows how well maintainers have identified and abstracted problems. It offers a simple and straitforward way to help users. It does not propose many things, hoping one of them will be useful, because it already knows which ones are and which ones aren't. Being opiniated saves us from the holistic antipattern.
+
+What do you think ?
+
+[1] Like in every science, the myth of the lone problem solver/genius is still very pregnant but do not match the fact that the complexity of modern day problems require many people. No single brain can hold all the information nowadays. Articles are often signed by one researcher but hide that many poor PhD students were exploited to get it to complexion or that the article foundation themselves were explored by others.
 
 [2] I wonder how much this dream of an overeaching/omnipotent application is a lingering effect of our monoteist culture of having this one thing that covers everything.
