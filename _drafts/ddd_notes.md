@@ -26,3 +26,7 @@ How isomorphic is the domain with the DB ?
 ### Aggregates
 
 They would be persisted in different DB transactions ideally (so can improve performance)
+
+### Legacy
+
+Legacy: not even knowing what is the connasence (what does the change impact ? which feature use this part ? etc)
